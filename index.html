@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RBR Telemetry // Driver: Vanshika</title>
+    <link href="https://fonts.googleapis.com/css2?family=Titillium+Web:ital,wght@0,400;0,700;0,900;1,700&family=JetBrains+Mono:wght@500;800&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+
+    <style>
+        :root {
+            --rb-navy: #060918;
+            --rb-card: rgba(14, 21, 48, 0.75);
+            --rb-red: #E10600;
+            --rb-yellow: #FCD700;
+            --rb-cyan: #00D2BE;
+            --text-main: #FFFFFF;
+            --text-muted: #94A3B8;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            background-color: var(--rb-navy);
+            background-image:
+                radial-gradient(circle at 85% 15%, rgba(225, 6, 0, 0.18) 0%, transparent 45%),
+                radial-gradient(circle at 15% 85%, rgba(252, 215, 0, 0.12) 0%, transparent 45%),
+                linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100%, 30px 30px, 30px 30px;
+            color: var(--text-main);
+            font-family: 'Titillium Web', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 1.2rem;
+            overflow-x: hidden;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 520px;
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+            z-index: 10;
+        }
+
+        /* Top Telemetry Header */
+        .header-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--rb-card);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-left: 4px solid var(--rb-red);
+            padding: 0.8rem 1.2rem;
+            border-radius: 12px;
+            backdrop-filter: blur(12px);
+        }
+
+        .driver-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .car-num {
+            font-size: 2rem;
+            font-weight: 900;
+            font-style: italic;
+            color: var(--rb-red);
+            text-shadow: 0 0 15px rgba(225, 6, 0, 0.5);
+            line-height: 1;
+        }
+
+        .driver-info h2 {
+            font-size: 1.1rem;
+            font-weight: 900;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .driver-info span {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.72rem;
+            color: var(--rb-yellow);
+        }
+
+        .status-pill {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            padding: 0.35rem 0.7rem;
+            border-radius: 50px;
+            background: rgba(225, 6, 0, 0.2);
+            border: 1px solid var(--rb-red);
+            color: #ff6b6b;
+            font-weight: 800;
+            animation: pulseRed 1.8s infinite;
+        }
+
+        .status-pill.optimal {
+            background: rgba(0, 210, 190, 0.2);
+            border-color: var(--rb-cyan);
+            color: var(--rb-cyan);
+            animation: none;
+        }
+
+        @keyframes pulseRed {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Main Telemetry Card */
+        .telemetry-card {
+            background: var(--rb-card);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 18px;
+            padding: 1.6rem;
+            backdrop-filter: blur(16px);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        }
+
+        .card-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.9rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .metric-box {
+            background: rgba(0, 0, 0, 0.35);
+            border: 1px solid rgba(255,255,255,0.06);
+            padding: 0.9rem;
+            border-radius: 12px;
+        }
+
+        .metric-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        .metric-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.3rem;
+            font-weight: 800;
+            margin-top: 0.2rem;
+            color: white;
+        }
+
+        .metric-value.warn { color: var(--rb-red); }
+        .metric-value.good { color: var(--rb-cyan); }
+
+        /* Interactive Pit Stop Mini-Game */
+        .pit-zone {
+            background: rgba(0, 0, 0, 0.45);
+            border: 1px dashed rgba(252, 215, 0, 0.4);
+            border-radius: 14px;
+            padding: 1.2rem;
+            text-align: center;
+        }
+
+        .pit-header {
+            font-weight: 700;
+            font-size: 1.05rem;
+            margin-bottom: 0.3rem;
+            color: var(--rb-yellow);
+        }
+
+        .pit-sub {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+        }
+
+        .timer-display {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 2rem;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 1rem;
+        }
+
+        .tyres-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.8rem;
+        }
+
+        .tyre-btn {
+            background: rgba(255, 255, 255, 0.06);
+            border: 2px solid var(--rb-red);
+            color: white;
+            padding: 0.9rem 0.5rem;
+            border-radius: 12px;
+            cursor: pointer;
+            font-family: 'Titillium Web', sans-serif;
+            transition: transform 0.1s, background 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.2rem;
+        }
+
+        .tyre-btn:active { transform: scale(0.94); }
+
+        .tyre-btn.fitted {
+            background: rgba(0, 210, 190, 0.18);
+            border-color: var(--rb-cyan);
+            color: var(--rb-cyan);
+            pointer-events: none;
+        }
+
+        .tyre-pos {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            opacity: 0.7;
+        }
+
+        .tyre-name {
+            font-weight: 800;
+            font-size: 0.95rem;
+        }
+
+        /* Radio Message Box (Reveals after Pit Stop) */
+        .radio-box {
+            display: none;
+            background: linear-gradient(135deg, rgba(225, 6, 0, 0.15), rgba(14, 21, 48, 0.9));
+            border: 1px solid var(--rb-red);
+            border-radius: 16px;
+            padding: 1.4rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .radio-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            font-weight: 800;
+            color: var(--rb-yellow);
+            margin-bottom: 0.6rem;
+        }
+
+        .wave-bars {
+            display: inline-flex;
+            gap: 2px;
+            height: 12px;
+            align-items: flex-end;
+        }
+
+        .wave-bars span {
+            width: 3px;
+            background: var(--rb-red);
+            animation: soundWave 0.6s infinite alternate;
+        }
+        .wave-bars span:nth-child(2) { animation-delay: 0.2s; }
+        .wave-bars span:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes soundWave {
+            0% { height: 3px; }
+            100% { height: 12px; }
+        }
+
+        .radio-quote {
+            font-size: 1.05rem;
+            line-height: 1.5;
+            font-style: italic;
+            color: #F8FAFC;
+            margin-bottom: 1rem;
+        }
+
+        .drs-btn {
+            width: 100%;
+            background: linear-gradient(90deg, var(--rb-red), #ff2a24);
+            color: white;
+            border: none;
+            padding: 0.95rem;
+            border-radius: 10px;
+            font-family: 'Titillium Web', sans-serif;
+            font-weight: 900;
+            font-size: 1rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            cursor: pointer;
+            box-shadow: 0 8px 25px rgba(225, 6, 0, 0.4);
+            transition: transform 0.15s;
+        }
+
+        .drs-btn:active { transform: scale(0.97); }
+
+        .boost-toast {
+            margin-top: 0.8rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            color: var(--rb-yellow);
+            text-align: center;
+            min-height: 1.2rem;
+        }
+
+        .reset-link {
+            text-align: center;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            text-decoration: underline;
+            margin-top: 0.5rem;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Top Bar -->
+        <div class="header-bar">
+            <div class="driver-badge">
+                <div class="car-num">1</div>
+                <div class="driver-info">
+                    <h2>Vanshika</h2>
+                    <span>CHASSIS: RB19 // AERO-SPEC</span>
+                </div>
+            </div>
+            <div class="status-pill" id="engineStatus">ENGINE OVERHEATING</div>
+        </div>
+
+        <!-- Main Telemetry & Pit Stop -->
+        <div class="telemetry-card" id="mainCard">
+            <div class="card-title">
+                <span>LIVE BIOMETRICS</span>
+                <span>LAP 19/57</span>
+            </div>
+
+            <div class="metrics-grid">
+                <div class="metric-box">
+                    <div class="metric-label">Core Temp</div>
+                    <div class="metric-value warn" id="tempVal">HIGH (FEVER)</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-label">Tyre Compound</div>
+                    <div class="metric-value warn" id="tyreVal">WORN SOFT 🔴</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-label">Energy Recovery</div>
+                    <div class="metric-value" id="ersVal">14% LOW</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-label">Race Engineer</div>
+                    <div class="metric-value" style="color: var(--rb-yellow);">HARISH</div>
+                </div>
+            </div>
+
+            <!-- Pit Stop Game -->
+            <div class="pit-zone" id="pitZone">
+                <div class="pit-header" id="pitTitle">📻 "BOX, BOX! BOX, BOX!"</div>
+                <div class="pit-sub" id="pitSub">Tap all 4 recovery tyres fast to cool the RB19 down!</div>
+                <div class="timer-display" id="timer">0.00s</div>
+
+                <div class="tyres-grid">
+                    <button class="tyre-btn" onclick="fitTyre(this)">
+                        <span class="tyre-pos">FRONT LEFT</span>
+                        <span class="tyre-name">💧 HYDRATION</span>
+                    </button>
+                    <button class="tyre-btn" onclick="fitTyre(this)">
+                        <span class="tyre-pos">FRONT RIGHT</span>
+                        <span class="tyre-name">🛌 FULL REST</span>
+                    </button>
+                    <button class="tyre-btn" onclick="fitTyre(this)">
+                        <span class="tyre-pos">REAR LEFT</span>
+                        <span class="tyre-name">💊 MEDS & SOUP</span>
+                    </button>
+                    <button class="tyre-btn" onclick="fitTyre(this)">
+                        <span class="tyre-pos">REAR RIGHT</span>
+                        <span class="tyre-name">✨ ZERO STRESS</span>
+                    </button>
+                </div>
+                <div class="reset-link" id="resetBtn" onclick="resetPitStop()">↻ Re-attempt to beat 1.82s</div>
+            </div>
+        </div>
+
+        <!-- Team Radio Message -->
+        <div class="radio-box" id="radioBox">
+            <div class="radio-tag">
+                <div class="wave-bars"><span></span><span></span><span></span></div>
+                TEAM RADIO // HARISH TO VANSHIKA
+            </div>
+            <p class="radio-quote" id="radioQuote">
+                "Simply lovely pit stop, Vanshika. Even with a fever, your pace is still two tenths faster than the rest of the grid. Take it easy today, drink plenty of water, and let the RB19 cool down. Full send when you're back at 100%."
+            </p>
+            <button class="drs-btn" onclick="activateDRS()">⚡ ACTIVATE DRS (MOOD BOOST)</button>
+            <div class="boost-toast" id="boostToast"></div>
+        </div>
+    </div>
+
+    <script>
+        let startTime = null;
+        let timerInterval = null;
+        let fittedCount = 0;
+
+        const drsMessages = [
+            "DRS OPEN: +15 km/h straight-line happiness deployed! 🏎️💨",
+            "PURPLE SECTOR: Official FIA ruling—you are elite even when sick. 🏆",
+            "FASTEST LAP BONUS: Valid for 1 free post-recovery treat from Harish. 🍕",
+            "MAX MODE: 'Haha, yes! Dis feels good!' — Verstappen (probably) 🦁"
+        ];
+        let drsIndex = 0;
+
+        // Intro entrance
+        gsap.from(".header-bar", { y: -20, opacity: 0, duration: 0.6, ease: "power3.out" });
+        gsap.from(".telemetry-card", { y: 25, opacity: 0, duration: 0.8, delay: 0.15, ease: "power3.out" });
+
+        function fitTyre(btn) {
+            if (btn.classList.contains('fitted')) return;
+
+            // Start stopwatch on first tap
+            if (fittedCount === 0) {
+                startTime = performance.now();
+                timerInterval = setInterval(() => {
+                    const elapsed = (performance.now() - startTime) / 1000;
+                    document.getElementById('timer').innerText = elapsed.toFixed(2) + 's';
+                }, 20);
+            }
+
+            btn.classList.add('fitted');
+            const nameSpan = btn.querySelector('.tyre-name');
+            nameSpan.innerText = "✓ FITTED";
+            fittedCount++;
+
+            gsap.fromTo(btn, { scale: 0.9 }, { scale: 1, duration: 0.25, ease: "back.out(2)" });
+
+            if (fittedCount === 4) {
+                clearInterval(timerInterval);
+                const finalTime = ((performance.now() - startTime) / 1000).toFixed(2);
+                completePitStop(finalTime);
+            }
+        }
+
+        function completePitStop(time) {
+            document.getElementById('timer').innerText = time + 's';
+            document.getElementById('timer').style.color = '#00D2BE';
+
+            const beatRecord = parseFloat(time) <= 1.82;
+            document.getElementById('pitTitle').innerText = beatRecord
+                ? "🏆 NEW WORLD RECORD! FASTER THAN RBR (1.82s)!"
+                : "🟢 GREEN LIGHT! GO, GO, GO!";
+            document.getElementById('pitSub').innerText = beatRecord
+                ? "Unbelievable reaction speed while running a fever!"
+                : `Pit time: ${time}s (Red Bull record: 1.82s)`;
+
+            // Update telemetry metrics
+            const statusPill = document.getElementById('engineStatus');
+            statusPill.innerText = "COOLING OPTIMAL";
+            statusPill.classList.add('optimal');
+
+            const tempVal = document.getElementById('tempVal');
+            tempVal.innerText = "STABILIZING ❄️";
+            tempVal.className = "metric-value good";
+
+            const tyreVal = document.getElementById('tyreVal');
+            tyreVal.innerText = "FRESH MEDIUM 🟡";
+            tyreVal.className = "metric-value good";
+
+            const ersVal = document.getElementById('ersVal');
+            ersVal.innerText = "CHARGING 🔋";
+            ersVal.className = "metric-value good";
+
+            document.getElementById('resetBtn').style.display = "block";
+
+            // Reveal Team Radio
+            const radioBox = document.getElementById('radioBox');
+            radioBox.style.display = "block";
+            gsap.fromTo(radioBox, { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, ease: "power3.out" });
+        }
+
+        function resetPitStop() {
+            clearInterval(timerInterval);
+            fittedCount = 0;
+            startTime = null;
+            document.getElementById('timer').innerText = "0.00s";
+            document.getElementById('timer').style.color = "white";
+            document.getElementById('pitTitle').innerText = '📻 "BOX, BOX! BOX, BOX!"';
+            document.getElementById('pitSub').innerText = "Tap all 4 recovery tyres fast to cool the RB19 down!";
+            document.getElementById('resetBtn').style.display = "none";
+
+            const labels = ["💧 HYDRATION", "🛌 FULL REST", "💊 MEDS & SOUP", "✨ ZERO STRESS"];
+            const buttons = document.querySelectorAll('.tyre-btn');
+            buttons.forEach((btn, idx) => {
+                btn.classList.remove('fitted');
+                btn.querySelector('.tyre-name').innerText = labels[idx];
+            });
+        }
+
+        function activateDRS() {
+            const toast = document.getElementById('boostToast');
+            toast.innerText = drsMessages[drsIndex % drsMessages.length];
+            drsIndex++;
+
+            gsap.fromTo(toast, { scale: 0.85, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.3, ease: "back.out(1.7)" });
+            gsap.to(".drs-btn", { x: "random(-4, 4)", duration: 0.05, repeat: 5, yoyo: true });
+        }
+    </script>
+</body>
+</html>
